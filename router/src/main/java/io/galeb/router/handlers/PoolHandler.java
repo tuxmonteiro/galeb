@@ -24,7 +24,6 @@ import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
-import io.undertow.attribute.ExchangeAttribute;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -33,7 +32,8 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
@@ -45,10 +45,7 @@ public class PoolHandler implements HttpHandler {
     private static final String CHECK_RULE_HEADER  = "X-Check-Pool";
     private static final String X_POOL_NAME_HEADER = "X-Pool-Name";
 
-    public static final String PROP_CONN_PER_THREAD         = "connPerThread";
-    public static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LogManager.getLogger(PoolHandler.class);
 
     private final int maxRequestTime = Integer.parseInt(SystemEnv.POOL_MAX_REQUEST_TIME.getValue());
     private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
@@ -91,7 +88,7 @@ public class PoolHandler implements HttpHandler {
     private synchronized HttpHandler buildPoolHandler() {
         return exchange -> {
             if (pool != null) {
-                logger.info("creating pool " + pool.getName());
+                LOGGER.info("creating pool " + pool.getName());
                 proxyClient = getProxyClient();
                 addTargets(proxyClient);
                 proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
@@ -104,7 +101,7 @@ public class PoolHandler implements HttpHandler {
 
     private ExtendedLoadBalancingProxyClient getProxyClient() {
         final HostSelector hostSelector = defineHostSelector();
-        logger.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
+        LOGGER.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
 
         final ExclusivityChecker exclusivityChecker = exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE);
         return new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(), exclusivityChecker, hostSelector)
@@ -114,22 +111,10 @@ public class PoolHandler implements HttpHandler {
     }
 
     private int getConnPerThread() {
-        int poolMaxConn = Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
-        int connPerThread = poolMaxConn / Integer.parseInt(SystemEnv.IO_THREADS.getValue());
-        String propConnPerThread = pool.getProperties().get(PROP_CONN_PER_THREAD);
-        if (propConnPerThread != null) {
-            try {
-                connPerThread = Integer.parseInt(propConnPerThread);
-            } catch (NumberFormatException ignore) {}
-        }
-        String discoveredMembersStr = pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE);
-        float discoveredMembers = 1.0f;
-        if (discoveredMembersStr != null && !"".equals(discoveredMembersStr)) {
-            discoveredMembers = Float.parseFloat(discoveredMembersStr);
-        }
-        float discoveryMembersSize = Math.max(discoveredMembers, 1.0f);
-        connPerThread = Math.round((float) connPerThread / discoveryMembersSize);
-        return connPerThread;
+        final int poolMaxConn = Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
+        final int poolSize = pool.getPoolSize().intValue();
+        // TODO: connPerThread = Math.round((float) connPerThread / discoveryMembersSize)
+        return (poolSize > 0 ? poolSize : poolMaxConn) / Integer.parseInt(SystemEnv.IO_THREADS.getValue());
     }
 
     private HttpHandler badGatewayHandler() {
@@ -137,7 +122,7 @@ public class PoolHandler implements HttpHandler {
     }
 
     private HostSelector defineHostSelector() {
-        BalancePolicy hostSelectorName = pool.getBalancePolicy();
+        BalancePolicy hostSelectorName = pool.getBalancepolicy();
         if (hostSelectorName != null) {
             return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
         }
@@ -149,13 +134,13 @@ public class PoolHandler implements HttpHandler {
             String value = target.getName();
             URI uri = URI.create(target.getName());
             proxyClient.addHost(uri);
-            logger.info("[pool:" + pool.getName() + "] added Target " + value);
+            LOGGER.info("[pool:" + pool.getName() + "] added Target " + value);
         });
     }
 
     private HttpHandler healthcheckPoolHandler() {
         return exchange -> {
-            logger.warn("detected header " + CHECK_RULE_HEADER);
+            LOGGER.warn("detected header " + CHECK_RULE_HEADER);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
             exchange.getResponseHeaders().put(HttpString.tryFromString(X_POOL_NAME_HEADER), pool.getName());

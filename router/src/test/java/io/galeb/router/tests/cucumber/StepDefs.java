@@ -24,7 +24,6 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.Application;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
-import io.galeb.router.tests.client.JmxClientService;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
@@ -73,9 +72,6 @@ public class StepDefs {
 
     @Autowired
     private HttpClient client;
-
-    @Autowired
-    private JmxClientService jmxClientService;
 
     private long requestTime = 0L;
 
@@ -130,20 +126,6 @@ public class StepDefs {
     @Do("^body is (\\w* )?(.+)")
     public void bodyIs(String inverter, String body) throws Throwable {
         assertThat(response.getResponseBody(), inverter != null ? not(equalTo(body)) : equalTo(body));
-    }
-
-    @Do("^jmx has ActiveConnections$")
-    public void jmxHasActiveConnections() {
-        if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveConnections"), notNullValue());
-        }
-    }
-
-    @Do("^jmx has ActiveRequests$")
-    public void jmxHasActiveRequests() {
-        if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveRequests"), notNullValue());
-        }
     }
 
     @And("^wait (\\d+) ms$")

@@ -20,19 +20,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.SystemEnv;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
-import static io.galeb.core.logutils.ErrorLogger.logError;
-
 @Component
 public class ManagerClient {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LogManager.getLogger(ManagerClient.class);
 
     private final Gson gson = new GsonBuilder()
             .setLenient()
@@ -57,7 +55,7 @@ public class ManagerClient {
                         Virtualhosts virtualhosts = gson.fromJson(body, Virtualhosts.class);
                         resultCallBack.onResult(virtualhosts);
                     } catch (Exception e) {
-                        logError(e, this.getClass());
+                        LOGGER.error(e);
                         resultCallBack.onResult(null);
                     }
                 }
@@ -80,6 +78,7 @@ public class ManagerClient {
     public static class Virtualhosts implements Serializable {
         private static final long serialVersionUID = 1L;
         public VirtualHost[] virtualhosts;
+        public String etag;
     }
 
 }

@@ -34,10 +34,11 @@ import static io.galeb.router.handlers.PoolHandler.POOL_NAME;
 public class StatsdCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final String UNDEF      = "UNDEF";
-    private static final String ENV_TAG    = SystemEnv.STATSD_ENVIRONMENT_TAG.getValue();
-    private static final String VH_TAG     = SystemEnv.STATSD_VIRTUALHOST_TAG.getValue();
-    private static final String POOL_TAG   = SystemEnv.STATSD_POOL_TAG.getValue();
-    private static final String TARGET_TAG = SystemEnv.STATSD_TARGET_TAG.getValue();
+    private static final String TAG_SEP    = "_";
+    private static final String ENV_TAG    = TAG_SEP + "ENV" + TAG_SEP + ".";
+    private static final String VH_TAG     = TAG_SEP + "VH" + TAG_SEP + ".";
+    private static final String POOL_TAG   = TAG_SEP + "POOL" + TAG_SEP + ".";
+    private static final String TARGET_TAG = TAG_SEP + "TARGET" + TAG_SEP + ".";
 
     private final String environmentName = cleanUpKey(SystemEnv.ENVIRONMENT_NAME.getValue().replaceAll("-","_").toLowerCase());
 

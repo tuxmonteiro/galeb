@@ -4,10 +4,10 @@ RELEASE=$(shell date +%y%m%d%H%M)
 SERVICES=router api legba kratos health
 
 deploy-snapshot:
-	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
+	mvn clean install -U -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
 
 galeb: clean
-	mvn package -DskipTests
+	mvn package -U -DskipTests
 
 test:
 	mvn test

@@ -21,19 +21,15 @@ import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Arrays;
 
 public class NameVirtualHostDefaultHandler implements HttpHandler {
 
-    public static final String IPACL_ALLOW = "allow";
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LogManager.getLogger(NameVirtualHostDefaultHandler.class);
 
     private final ApplicationContext context;
     private final ManagerClientCache cache;
@@ -49,7 +45,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
         final String hostName = exchange.getHostName();
         final NameVirtualHostHandler nameVirtualHostHandler = context.getBean(NameVirtualHostHandler.class);
         if (isValid(hostName, nameVirtualHostHandler)) {
-            logger.info("adding " + hostName);
+            LOGGER.info("adding " + hostName);
             final VirtualHost virtualHost = cache.get(hostName);
             nameVirtualHostHandler.addHost(hostName, defineNextHandler(virtualHost));
             nameVirtualHostHandler.handleRequest(exchange);
@@ -67,15 +63,12 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     }
 
     private HttpHandler defineNextHandler(final VirtualHost virtualHost) {
-        final RuleTargetHandler ruleTargetHandler =  new RuleTargetHandler(virtualHost);
-        if (virtualHost.getProperties().containsKey(IPACL_ALLOW)) {
-            final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(ruleTargetHandler);
-            Arrays.asList(virtualHost.getProperties().get(IPACL_ALLOW).split(","))
-                    .forEach(ipAddressAccessControlHandler::addAllow);
-            ipAddressAccessControlHandler.setDefaultAllow(false);
-            return ipAddressAccessControlHandler;
-        } else {
-            return ruleTargetHandler;
-        }
+        return new RuleTargetHandler(virtualHost);
+        // TODO: IP_ACL
+        //       final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(ruleTargetHandler);
+        //       Arrays.asList(virtualHost.getProperties().get(IPACL_ALLOW).split(","))
+        //             .forEach(ipAddressAccessControlHandler::addAllow);
+        //       ipAddressAccessControlHandler.setDefaultAllow(false);
+        //       return ipAddressAccessControlHandler;
     }
 }

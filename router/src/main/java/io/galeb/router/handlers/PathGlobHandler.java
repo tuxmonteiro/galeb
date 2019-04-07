@@ -28,18 +28,17 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import jodd.util.Wildcard;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PathGlobHandler implements HttpHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LogManager.getLogger(PathGlobHandler.class);
 
     private final ConcurrentMap<PathOrdered, HttpHandler> paths = new ConcurrentSkipListMap<>();
 
@@ -70,10 +69,10 @@ public class PathGlobHandler implements HttpHandler {
                         if (handler != null) {
                             handler.handleRequest(exchange);
                         } else {
-                            logger.error("Handler is null");
+                            LOGGER.error("Handler is null");
                         }
                     } catch (Exception e) {
-                        ErrorLogger.logError(e, this.getClass());
+                        LOGGER.error(e);
                     }
                 }
             }

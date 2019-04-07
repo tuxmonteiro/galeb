@@ -18,8 +18,8 @@ package io.galeb.router.handlers;
 
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Rule;
+import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.enums.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RuleTargetHandler implements HttpHandler {
@@ -90,31 +91,23 @@ public class RuleTargetHandler implements HttpHandler {
 
             private void loadRules() {
                 final Rule ruleSlashOnly;
-                if (virtualHost.getRules().size() == 1 &&
-                        (ruleSlashOnly = virtualHost.getRules().stream().findAny().orElse(null)) != null &&
-                        EnumRuleType.PATH.toString().equals(ruleSlashOnly.getRuleType().getName()) &&
-                        ruleSlashOnly.getProperties().get(RULE_MATCH).equals("/")) {
-                    poolHandler = new PoolHandler(ruleSlashOnly.getPool());
+                final Set<RuleOrdered> rulesordered = virtualHost.getVirtualhostgroup().getRulesordered();
+                if (rulesordered.size() == 1 &&
+                        (ruleSlashOnly = rulesordered.stream().map(RuleOrdered::getRule).findAny().orElse(null)) != null &&
+                        "/".equals(ruleSlashOnly.getMatching())) {
+                    poolHandler = new PoolHandler(ruleSlashOnly.getPools().stream().findAny().orElse(null));
                     return;
                 }
 
-                final Rule ruleDefault = virtualHost.getRuleDefault();
-                if (ruleDefault != null) {
-                    pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool()));
-                }
-
-                virtualHost.getRules().forEach(rule -> {
-                    String order = Optional.ofNullable(rule.getProperties().get(RULE_ORDER)).orElse(String.valueOf(Integer.MAX_VALUE));
-                    String type = rule.getRuleType().getName();
-                    Pool pool = rule.getPool();
-                    String path = rule.getProperties().get(RULE_MATCH);
+                rulesordered.forEach(ruleOrdered -> {
+                    Rule rule = ruleOrdered.getRule();
+                    Integer order = ruleOrdered.getOrder();
+                    Pool pool = rule.getPools().stream().findAny().orElse(null);
+                    String path = rule.getMatching();
                     if (path != null) {
-                        logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
-
-                        if (EnumRuleType.PATH.toString().equals(type)) {
-                            final PoolHandler poolHandler = new PoolHandler(pool);
-                            pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
-                        }
+                        logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + "]");
+                        final PoolHandler poolHandler = new PoolHandler(pool);
+                        pathGlobHandler.addPath(path, order, poolHandler);
                     } else {
                         logger.warn("[" + virtualHost.getName() + "] Rule " + rule.getName() + " ignored. properties.match IS NULL");
                     }

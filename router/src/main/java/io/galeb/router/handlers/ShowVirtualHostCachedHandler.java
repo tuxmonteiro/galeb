@@ -49,7 +49,6 @@ public class ShowVirtualHostCachedHandler implements HttpHandler {
             String virtualhostStr = exchange.getRequestHeaders().getFirst(X_GALEB_SHOW_CACHE);
             VirtualHost virtualhost = cache.get(virtualhostStr);
             if (virtualhost != null) {
-                virtualhost.getEnvironment().getProperties().put("fullhash", etag);
                 exchange.setStatusCode(StatusCodes.OK);
                 exchange.getResponseSender().send(gson.toJson(virtualhost, VirtualHost.class));
             } else {
