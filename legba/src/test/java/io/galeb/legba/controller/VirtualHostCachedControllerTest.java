@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.galeb.legba.services.RoutersService.DEFAULT_API_VERSION;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -43,7 +44,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldBadRequestWhenPassingApiVersionInexistent() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
+        when(versionService.getCache(DEFAULT_API_VERSION, "1", "zone-local", "2")).thenReturn(null);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
@@ -56,7 +57,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldOkResponseWhenNotPassingApiVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
+        when(versionService.getCache(DEFAULT_API_VERSION, "1", "zone-local", "2")).thenReturn(null);
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
@@ -74,7 +75,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldOkResponseWhenDoesNotExistsCache() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
+        when(versionService.getCache(DEFAULT_API_VERSION, "1", "zone-local", "2")).thenReturn(null);
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
@@ -105,7 +106,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldNotFoundResponse() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn("");
+        when(versionService.getCache(DEFAULT_API_VERSION, "1", "zone-local", "2")).thenReturn("");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");

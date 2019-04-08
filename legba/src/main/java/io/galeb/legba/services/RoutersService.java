@@ -56,7 +56,7 @@ public class RoutersService {
 
     private static final long LEGBA_CACHE_EXPIRATION = Long.parseLong(SystemEnv.LEGBA_CACHE_EXPIRATION.getValue());
 
-    private static final String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
+    public static final String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
     private final StringRedisTemplate redisTemplate;
     private final ChangesService changesService;
@@ -137,7 +137,7 @@ public class RoutersService {
         return numRouters;
     }
 
-    public void put(final RouterMeta routerMeta) {
+    public void put(final RouterMeta routerMeta, String apiVersion) {
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         String logCorrelation = routerMeta.correlation;
         event.put("correlation", logCorrelation);
@@ -146,7 +146,7 @@ public class RoutersService {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, routerMeta.groupId, routerMeta.localIP);
             registerRouterAndUpdateTtl(routerMeta, event, key);
             final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta);
-            updateRouterMapCached(routerMeta, eTagRouters);
+            updateRouterMapCached(routerMeta, eTagRouters, apiVersion);
         } catch (Exception e) {
             event.put("short_message",  "POST /routers/" + routerMeta.envId + " FAILED");
             event.sendError(e);
@@ -169,25 +169,26 @@ public class RoutersService {
         redisTemplate.opsForValue().set(key, routerMeta.version, REGISTER_TTL, TimeUnit.MILLISECONDS);
     }
 
-    private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters)
+    private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters, String apiVersion)
             throws ConverterNotFoundException {
 
         String zoneId = routerMeta.zoneId;
         boolean lock = false;
         try {
-            if (lock = lockerService.notLocked(zoneId)) {
+            if (lock = lockerService.notLocked(zoneId, apiVersion)) {
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", routerMeta.correlation);
                 event.put("short_message", "Getting lock");
+                event.put("api_version", apiVersion);
                 event.sendInfo();
 
                 deleteAllHasChangesProcessed(routerMeta, eTagRouters);
-                rebuildRouterMapCached(routerMeta);
+                rebuildRouterMapCached(routerMeta, apiVersion);
             }
         } finally {
             if (lock) {
-                lockerService.release(zoneId, routerMeta.correlation);
+                lockerService.release(zoneId, routerMeta.correlation, apiVersion);
             }
         }
     }
@@ -212,15 +213,15 @@ public class RoutersService {
         return eTagRouters;
     }
 
-    private void rebuildRouterMapCached(RouterMeta routerMeta)
+    private void rebuildRouterMapCached(RouterMeta routerMeta, String apiVersion)
             throws ConverterNotFoundException {
 
         final String envId = routerMeta.envId;
         final String zoneId = routerMeta.zoneId;
         String actualVersion = routerMeta.actualVersion;
 
-        String cache = versionService.getCache(envId, zoneId, actualVersion);
-        String lastVersion = versionService.lastCacheVersion(envId, zoneId, actualVersion);
+        String cache = versionService.getCache(DEFAULT_API_VERSION, envId, zoneId, actualVersion);
+        String lastVersion = versionService.lastCacheVersion(DEFAULT_API_VERSION, envId, zoneId, actualVersion);
         String cacheTime = versionService.getCacheTime(envId, zoneId);
 
         boolean cacheExpired = cacheTime != null && System.currentTimeMillis() - Long.parseLong(cacheTime) > LEGBA_CACHE_EXPIRATION;
@@ -231,14 +232,14 @@ public class RoutersService {
             if (cacheExpired) {
                 actualVersion = Long.toString(versionService.incrementVersion(envId));
             }
-            // TODO: Add V2..Vx dynamic support
-            final Converter converter = getConverter(DEFAULT_API_VERSION);
+            final Converter converter = getConverter(apiVersion);
             int numRouters = get(envId, routerMeta.groupId);
             cache = converter.convertToString(routerMeta, numRouters, actualVersion);
-            versionService.setCache(cache, envId, zoneId, actualVersion);
+            versionService.setCache(cache, apiVersion, envId, zoneId, actualVersion);
 
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("short_message", "New Cache DONE");
+            event.put("api_version", apiVersion);
             event.put("correlation", routerMeta.correlation);
             event.put("cacheSize", cache.length());
             event.put("cacheTimeMS", System.currentTimeMillis() - start);
@@ -265,7 +266,9 @@ public class RoutersService {
 
     private Converter getConverter(String apiVersion) throws ConverterNotFoundException {
         final Converter converter;
-        if (apiVersion == null || ConverterV1.API_VERSION.equals(apiVersion)) {
+        if (apiVersion == null || "".equals(apiVersion)) {
+            converter = getConverter(DEFAULT_API_VERSION);
+        } else if (ConverterV1.API_VERSION.equals(apiVersion)) {
             converter = converterV1;
         } else if (ConverterV2.API_VERSION.equals(apiVersion)) {
             converter = converterV2;

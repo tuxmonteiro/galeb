@@ -24,6 +24,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.Set;
 
+import static io.galeb.legba.services.RoutersService.DEFAULT_API_VERSION;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @PropertySource("classpath:application.yml")
@@ -83,7 +85,7 @@ public class RoutersServiceTest {
         routerMeta.zoneId = null;
 
         //Action
-        routersService.put(routerMeta);
+        routersService.put(routerMeta, DEFAULT_API_VERSION);
         Set<JsonSchema.Env> envs = routersService.get(routerMeta.envId);
 
         //Assert
@@ -139,7 +141,7 @@ public class RoutersServiceTest {
         changesService.register(env, target, versionOldest);
 
         //Action
-        routersService.put(routerMeta);
+        routersService.put(routerMeta, DEFAULT_API_VERSION);
         entityManager.clear();
 
         //Assert
@@ -168,7 +170,7 @@ public class RoutersServiceTest {
         changesService.register(env, target, versionNewest);
 
         //Action
-        routersService.put(routerMeta);
+        routersService.put(routerMeta, DEFAULT_API_VERSION);
 
         //Assert
         boolean hasChanges = changesService.hasByEnvironmentId(Long.valueOf(routerMeta.envId));
@@ -189,7 +191,7 @@ public class RoutersServiceTest {
         //routersService.REGISTER_TTL = 1L;
 
         //Action
-        routersService.put(routerMeta);
+        routersService.put(routerMeta, DEFAULT_API_VERSION);
 
         //Assert
         try {

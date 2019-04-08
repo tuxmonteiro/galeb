@@ -16,6 +16,7 @@
 
 package io.galeb.legba.controller;
 
+import static io.galeb.legba.services.RoutersService.DEFAULT_API_VERSION;
 import static org.springframework.http.HttpStatus.OK;
 
 import io.galeb.core.log.JsonEventToLogger;
@@ -43,13 +44,14 @@ public class VirtualHostCachedController extends AbstractController {
     }
 
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
-    public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
-                                               @PathVariable String envName,
+    public synchronized ResponseEntity showall(@PathVariable String envName,
+                                               @RequestHeader(value = "X-Api-Version", required = false) String apiVersion,
                                                @RequestHeader(value = "If-None-Match", required = false) String routerVersion,
                                                @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,
                                                @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
 
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        apiVersion = apiVersion == null || "".equals(apiVersion) ? DEFAULT_API_VERSION : apiVersion;
         event.put("apiVersion", apiVersion);
 
         Assert.notNull(envName, "Environment name is null");
@@ -60,7 +62,7 @@ public class VirtualHostCachedController extends AbstractController {
 
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
-        String lastVersion = versionService.lastCacheVersion(envId.toString(), zoneId, actualVersion);
+        String lastVersion = versionService.lastCacheVersion(apiVersion, envId.toString(), zoneId, actualVersion);
 
         event.put("short_message", "GET /virtualhostscached");
         event.put("actualVersion", actualVersion);
@@ -83,7 +85,7 @@ public class VirtualHostCachedController extends AbstractController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envId.toString(), zoneId, actualVersion);
+        String cache = versionService.getCache(apiVersion, envId.toString(), zoneId, actualVersion);
         if (cache == null || "".equals(cache)) {
             event.put("status_detail", "Cache NOT FOUND");
             event.put("status", HttpStatus.NOT_FOUND.toString());

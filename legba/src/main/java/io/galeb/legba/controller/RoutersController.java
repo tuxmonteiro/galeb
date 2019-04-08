@@ -17,6 +17,7 @@
 package io.galeb.legba.controller;
 
 import static io.galeb.core.common.GalebHttpHeaders.*;
+import static io.galeb.legba.services.RoutersService.DEFAULT_API_VERSION;
 import static org.springframework.http.HttpHeaders.IF_NONE_MATCH;
 
 import com.google.gson.Gson;
@@ -56,7 +57,9 @@ public class RoutersController extends AbstractController {
                                            @RequestHeader(value = X_GALEB_GROUP_ID) String routerGroupId,
                                            @RequestHeader(value = X_GALEB_ENVIRONMENT) String envName,
                                            @RequestHeader(value = IF_NONE_MATCH) String version,
-                                           @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId) throws Exception {
+                                           @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId,
+                                           @RequestHeader(value = "X-Api-Version", required = false) String apiVersion) throws Exception {
+        apiVersion = apiVersion == null || "".equals(apiVersion) ? DEFAULT_API_VERSION : apiVersion;
         final Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
 
@@ -80,7 +83,7 @@ public class RoutersController extends AbstractController {
         event.put("correlation", routerMeta.correlation);
         event.sendInfo();
 
-        routersService.put(routerMeta);
+        routersService.put(routerMeta, apiVersion);
         return ResponseEntity.ok().build();
     }
 

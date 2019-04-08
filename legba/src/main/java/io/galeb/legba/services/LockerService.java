@@ -37,22 +37,22 @@ public class LockerService {
         this.redisTemplate = redisTemplate;
     }
 
-    public synchronized boolean notLocked(String zoneId) {
-        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId)) {
+    public synchronized boolean notLocked(String zoneId, String apiVersion) {
+        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + apiVersion + "-" + zoneId)) {
             return false;
         } else {
-            redisTemplate.opsForValue().set(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, "" + System.currentTimeMillis(), ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
+            redisTemplate.opsForValue().set(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + apiVersion + "-" + zoneId, "" + System.currentTimeMillis(), ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
             return true;
         }
     }
 
-    public void release(String zoneId, String correlation) {
-        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId)) {
+    public void release(String zoneId, String correlation, String apiVersion) {
+        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + apiVersion + "-" + zoneId)) {
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("short_message", "Releasing lock");
             event.put("correlation", correlation);
             event.sendInfo();
-            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId);
+            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + apiVersion + "-" + zoneId);
         }
     }
 }

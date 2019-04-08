@@ -37,11 +37,12 @@ public class VersionService {
 
     /**
      * Description arguments:
-     * {0} - Environment Id
-     * {1} - Zone Id
-     * {1} - Version number
+     * {0} - apiVersion
+     * {1} - Environment Id
+     * {2} - Zone Id
+     * {3} - Version number
      */
-    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}";
+    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}:{3}";
 
     private static final String FORMAT_KEY_LAST_CACHE_TIME = "lastCacheTime:{0}:{1}";
 
@@ -56,8 +57,8 @@ public class VersionService {
         return version;
     }
 
-    public String getCache(String envId, String zoneId, String actualVersion) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, lastCacheVersion(envId, zoneId, actualVersion)));
+    public String getCache(String apiVersion, String envId, String zoneId, String actualVersion) {
+        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, apiVersion, envId, zoneId, lastCacheVersion(apiVersion, envId, zoneId, actualVersion)));
     }
 
     public String getCacheTime(String envId, String zoneId) {
@@ -69,8 +70,8 @@ public class VersionService {
         return redisTemplate.opsForValue().get(keyLastCacheTime);
     }
 
-    public void setCache(String cache, String envId, String zoneId, String actualVersion) {
-        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion), cache, 5, TimeUnit.MINUTES);
+    public void setCache(String cache, String apiVersion, String envId, String zoneId, String actualVersion) {
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, apiVersion, envId, zoneId, actualVersion), cache, 5, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_LAST_CACHE_TIME, envId, zoneId), Long.toString(System.currentTimeMillis()));
     }
 
@@ -79,10 +80,10 @@ public class VersionService {
         return redisTemplate.opsForValue().increment(keyFormatted, 1);
     }
 
-    public String lastCacheVersion(String envId, String zoneId, String actualVersion) {
-        String keyCache = MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId == null ? "*" : zoneId, "*");
+    public String lastCacheVersion(String apiVersion, String envId, String zoneId, String actualVersion) {
+        String keyCache = MessageFormat.format(FORMAT_KEY_CACHE, apiVersion, envId, zoneId == null ? "*" : zoneId, "*");
         String lastKeyCache = redisTemplate.keys(keyCache).stream().sorted(Comparator.reverseOrder()).limit(1).findAny()
-            .orElse(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, "0"));
+            .orElse(MessageFormat.format(FORMAT_KEY_CACHE, apiVersion, envId, zoneId, "0"));
         String[] lastCacheVersionArray = lastKeyCache.split(":");
         String lastCacheVersion = lastCacheVersionArray.length > 3 ? lastCacheVersionArray[3] : "0";
         if (!lastCacheVersion.equals(actualVersion)) {
