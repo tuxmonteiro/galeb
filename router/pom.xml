@@ -60,17 +60,17 @@
         <java.version>11</java.version>
         <jmx.port>5000</jmx.port>
 
-        <undertow.version>2.0.22.Final</undertow.version>
+        <undertow.version>2.2.37.Final</undertow.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <org.apache.logging.log4j.version>2.15.0</org.apache.logging.log4j.version>
+        <org.apache.logging.log4j.version>2.17.1</org.apache.logging.log4j.version>
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
         <commons-lang3.version>3.4</commons-lang3.version>
-        <commons-io.version>2.5</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
         <disruptor.version>3.4.4</disruptor.version>
         <metrics.version>3.2.2</metrics.version>
         <jodd.version>3.8.1</jodd.version>
-        <guava.version>21.0</guava.version>
-        <asynchttpclient.version>2.10.5</asynchttpclient.version>
+        <guava.version>32.0.0-android</guava.version>
+        <asynchttpclient.version>3.0.1</asynchttpclient.version>
         <metrics.version>3.2.2</metrics.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
