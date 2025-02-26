@@ -60,9 +60,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
         <timestamp>${maven.build.timestamp}</timestamp>
-        <mysql-connector-java.version>6.0.6</mysql-connector-java.version>
+        <mysql-connector-java.version>8.0.28</mysql-connector-java.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <org.apache.logging.log4j.version>2.15.0</org.apache.logging.log4j.version>
+        <org.apache.logging.log4j.version>2.17.1</org.apache.logging.log4j.version>
         <system-rules.version>1.16.0</system-rules.version>
     </properties>
 
