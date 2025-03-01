@@ -62,7 +62,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <mysql-connector-java.version>8.0.28</mysql-connector-java.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <org.apache.logging.log4j.version>2.17.1</org.apache.logging.log4j.version>
+        <org.apache.logging.log4j.version>2.24.3</org.apache.logging.log4j.version>
         <system-rules.version>1.16.0</system-rules.version>
     </properties>
 
