@@ -1,4 +1,4 @@
-# Galeb v4
+# Galeb v4 (globo.com)
 
 ![GitHub Release (latest by date)](https://img.shields.io/github/v/release/galeb/galeb)
 [![CircleCI Master](https://circleci.com/gh/galeb/galeb/tree/master.svg?style=shield)](https://circleci.com/gh/galeb/galeb/tree/master)
