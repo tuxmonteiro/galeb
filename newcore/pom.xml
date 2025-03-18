@@ -47,7 +47,7 @@
         <hikaricp.version>2.7.4</hikaricp.version>
         <disruptor.version>3.4.4</disruptor.version>
         <javax.activation.version>1.1.1</javax.activation.version>
-        <javax.xml.bind.version>2.2.11</javax.xml.bind.version>
+        <javax.xml.bind.version>2.3.9</javax.xml.bind.version>
     </properties>
 
     <dependencies>
