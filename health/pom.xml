@@ -64,7 +64,7 @@
         <log4j2.version>2.15.0</log4j2.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <metrics.version>3.2.6</metrics.version>
-        <jodd.version>3.8.1</jodd.version>
+        <jodd.version>3.9.1</jodd.version>
         <guava.version>21.0</guava.version>
         <asynchttpclient.version>3.0.0</asynchttpclient.version>
         <metrics.version>3.2.6</metrics.version>
