@@ -62,7 +62,7 @@
 
         <undertow.version>2.3.18.Final</undertow.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <org.apache.logging.log4j.version>2.24.3</org.apache.logging.log4j.version>
+        <org.apache.logging.log4j.version>2.25.0</org.apache.logging.log4j.version>
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <commons-io.version>2.19.0</commons-io.version>
