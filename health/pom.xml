@@ -62,7 +62,7 @@
 
         <org.apache.logging.log4j.version>2.25.2</org.apache.logging.log4j.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-lang3.version>3.19.0</commons-lang3.version>
         <metrics.version>3.2.6</metrics.version>
         <jodd.version>3.9.1</jodd.version>
         <guava.version>21.0</guava.version>
