@@ -69,7 +69,7 @@
         <asynchttpclient.version>3.0.3</asynchttpclient.version>
         <metrics.version>3.2.6</metrics.version>
         <gson.version>2.13.2</gson.version>
-        <spring-jms.version>6.2.12</spring-jms.version>
+        <spring-jms.version>6.2.13</spring-jms.version>
         <undertow.version>2.3.20.Final</undertow.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
