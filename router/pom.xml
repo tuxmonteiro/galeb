@@ -70,7 +70,7 @@
         <metrics.version>3.2.6</metrics.version>
         <jodd.version>3.9.1</jodd.version>
         <guava.version>32.1.3-android</guava.version>
-        <asynchttpclient.version>3.0.3</asynchttpclient.version>
+        <asynchttpclient.version>3.0.4</asynchttpclient.version>
         <metrics.version>3.2.6</metrics.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
