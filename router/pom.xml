@@ -62,7 +62,7 @@
 
         <undertow.version>2.3.20.Final</undertow.version>
         <log4j2.version>2.15.0</log4j2.version>
-        <org.apache.logging.log4j.version>2.25.2</org.apache.logging.log4j.version>
+        <org.apache.logging.log4j.version>2.25.3</org.apache.logging.log4j.version>
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-io.version>2.21.0</commons-io.version>
@@ -70,7 +70,7 @@
         <metrics.version>3.2.6</metrics.version>
         <jodd.version>3.9.1</jodd.version>
         <guava.version>32.1.3-android</guava.version>
-        <asynchttpclient.version>3.0.4</asynchttpclient.version>
+        <asynchttpclient.version>3.0.5</asynchttpclient.version>
         <metrics.version>3.2.6</metrics.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
